@@ -1,0 +1,329 @@
+<!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+
+<!-- jQuery library -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+<!-- Latest compiled JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+<style>
+    body {
+        background-color: cornflowerblue;
+    }
+    .jumbotron {
+        background-color: #437de9;
+        flex: 1;
+    }
+    .row {
+        display: flex;
+    }
+</style>
+
+<script>
+    $("document").ready(function(){
+        
+        $("#outputJumbo").height($("#inputJumbo").height());
+        
+        $("#clear").click(function() {
+            document.getElementById("input1").value = "";
+            document.getElementById("input2").value = "";
+            document.getElementById("input3").value = "";
+            document.getElementById("input4").value = "";
+            document.getElementById("outputSelect").innerHTML = "";
+        });
+        
+        $("#submit").click(function() {
+            
+            // Gets input
+            var no1 = parseInt(document.getElementById("input1").value);
+            var no2 = parseInt(document.getElementById("input2").value);
+            var no3 = parseInt(document.getElementById("input3").value);
+            var no4 = parseInt(document.getElementById("input4").value);
+            
+            for (i = 0; i < 64; i++)
+            {
+                // Convert i to base 4
+                var base4 = i.toString(4);
+                
+                // Pad zeroes
+                var padded = padZeroes(base4);
+                
+                // Submit all permutations of 'no'
+                submitOperations(padded, no1, no2, no3, no4);
+                submitOperations(padded, no1, no2, no4, no3);
+                submitOperations(padded, no1, no3, no2, no4);
+                submitOperations(padded, no1, no3, no4, no2);
+                submitOperations(padded, no1, no4, no2, no3);
+                submitOperations(padded, no1, no4, no3, no2);
+                
+                submitOperations(padded, no2, no1, no3, no4);
+                submitOperations(padded, no2, no1, no4, no3);
+                submitOperations(padded, no2, no3, no1, no4);
+                submitOperations(padded, no2, no3, no4, no1);
+                submitOperations(padded, no2, no4, no1, no3);
+                submitOperations(padded, no2, no4, no3, no1);
+                
+                submitOperations(padded, no3, no1, no2, no4);
+                submitOperations(padded, no3, no1, no4, no2);
+                submitOperations(padded, no3, no2, no1, no4);
+                submitOperations(padded, no3, no2, no4, no1);
+                submitOperations(padded, no3, no4, no1, no2);
+                submitOperations(padded, no3, no4, no2, no1);
+                
+                submitOperations(padded, no4, no1, no2, no3);
+                submitOperations(padded, no4, no1, no3, no2);
+                submitOperations(padded, no4, no2, no1, no3);
+                submitOperations(padded, no4, no2, no3, no1);
+                submitOperations(padded, no4, no3, no1, no2);
+                submitOperations(padded, no4, no3, no2, no1);
+            }
+            
+            removeRepeats();
+            
+            sortSelect();
+            
+            if (document.getElementById("alertEnabled").checked)
+                alert("Done!");
+            
+        });
+        
+    });
+    
+    function sortSelect()
+    {
+        // Gets list
+        var select = document.getElementById("outputSelect");
+        
+        // Goes through list
+        while (true)
+        {
+            var swapped = false;
+            for (m = 0; m < select.options.length - 1; m++)
+            {
+                // Get both numbers
+                var m1 = parseInt(select.options[m].innerHTML.split("   ")[0]);
+                var m2 = parseInt(select.options[m + 1].innerHTML.split("   ")[0]);
+
+                // If m1 is smaller than m2
+                if (m1 < m2)
+                {
+                    // SWAP
+                    var buffer = select.options[m + 1].innerHTML;
+                    select.options[m + 1].innerHTML = select.options[m].innerHTML;
+                    select.options[m].innerHTML = buffer;
+
+                    // We have swapped
+                    swapped = true;
+                }
+            }
+            
+            // If we have NOT swapped, escape loop
+            if (!swapped)
+            {
+                break;
+            }
+        }
+    }
+    
+    function removeRepeats()
+    {
+        // Gets list
+        var select = document.getElementById("outputSelect");
+        
+        // Goes through all options looking
+        for (k = 0; k < select.options.length; k++)
+        {
+            for (l = 0; l < select.options.length; l++)
+            {
+                // If k and l are not the same
+                if (k != l)
+                {
+                    // Get both numbers
+                    var kNumber = parseInt(select.options[k].innerHTML.split("   ")[0]);
+                    var lNumber = parseInt(select.options[l].innerHTML.split("   ")[0]);
+                    
+                    // If both numbers are the same
+                    if (kNumber == lNumber)
+                    {
+                        // Delete 'l'
+                        select.options.remove(l);
+                        
+                        // Sets l back 1
+                        l--;
+                    }
+                }
+            }
+        }
+    }
+    
+    function padZeroes(str)
+    {
+        var rv = "";
+        for (j = 0; j < 3 - str.length; j++)
+        {
+            rv += "0";
+        }
+        rv += str;
+        return rv;
+    }
+    
+    function submitOperations(operators, no1, no2, no3, no4)
+    {
+        // Get solution
+        var solution = applyOperations(operators, no1, no2, no3, no4);
+        
+        // If it is not decimal
+        if (solution % 1 == 0)
+        {
+            // If it is not negative
+            if (solution > 0)
+            {
+                // If it is below 101
+                if (solution < 101)
+                {
+                    // Add
+                    addOption(solution +
+                              "   =   (((" + no1 + convertOperation(operators[0]) + no2 +
+                              ")" + convertOperation(operators[1]) + no3 +
+                              ")" + convertOperation(operators[2]) + no4);
+                }
+            }
+        }
+    }
+    
+    // Returns a number based on operators string and 4 numbers
+    // 0  +
+    // 1  -
+    // 2  *
+    // 3  /
+    function applyOperations(operators, no1, no2, no3, no4)
+    {
+        var rv = applyOperation(operators[0], no1, no2);
+        rv = applyOperation(operators[1], rv, no3);
+        rv = applyOperation(operators[2], rv, no4);
+        return rv;
+    }
+    
+    // Returns a number based on one operator NUMBER and two integers
+    function applyOperation(operator, no1, no2)
+    {
+        switch (operator)
+        {
+            case '0':
+                return no1 + no2;
+            case '1':
+                return no1 - no2;
+            case '2':
+                return no1 * no2;
+            case '3':
+                return no1 / no2;
+        }
+    }
+    
+    // Converts an operation number into an operation character
+    function convertOperation(operation)
+    {
+        switch (operation)
+        {
+            case '0':
+                return "+";
+            case '1':
+                return "-";
+            case '2':
+                return "*";
+            case '3':
+                return "/";
+        }
+    }
+    
+    // Adds an option to output select
+    function addOption(optionName)
+    {
+        var select = document.getElementById("outputSelect");
+        var option = document.createElement("option");
+        option.text = optionName;
+        select.add(option);
+    }
+    
+</script>
+
+<html>
+
+	<head>
+		<title>Nubble! Bot Online</title>
+	</head>
+	
+	<body>
+		
+        <br/>
+        <div class="container">
+            <div class="jumbotron" style="text-align:center">
+              <img src="logo.png">
+                <p style="color:white">ONLINE</p>
+            </div>
+        </div>
+        
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6">
+                    <div id="inputJumbo" class="jumbotron">
+                        
+                        <!-- INPUT BOXES -->
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <input id="input1" type="number" class="form-control" maxlength="1" value="0">
+                            </div>
+                            <div class="col-sm-6">
+                                <input id="input2" type="number" class="form-control" maxlength="1" value="0">
+                            </div>
+                        </div>
+                        
+                        <br/>
+                        
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <input id="input3" type="number" class="form-control" maxlength="1" value="0">
+                            </div>
+                            <div class="col-sm-6">
+                                <input id="input4" type="number" class="form-control" maxlength="1" value="0">
+                            </div>
+                        </div>
+                        
+                        <br/>
+                        
+                        <!-- SUBMIT BOX -->
+                        <button id="submit" type="button" style="width:100%" class="btn btn-default">Submit</button>
+                        
+                        <br/>
+                        <br/>
+                        
+                        <!-- OTHER OPTIONS -->
+                        <button id="clear" type="button" style="width:100%" class="btn btn-default">Clear</button>
+                        
+                    </div>
+                </div>
+
+                <div class="col-sm-6">
+                    <div id="outputJumbo" class="jumbotron">
+                        <select id="outputSelect" class="form-control" style="height:100%" multiple>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="container">
+            <div class="jumbotron">
+                <div class="checkbox">
+                    <label style="color:white"><input id="alertEnabled" type="checkbox" checked>Show alert box whenever you click 'Submit'</label>
+                </div>
+            </div>
+            
+            <p>Written by <a href="http://www.matthewbarnes.x10.mx">Matthew Barnes</a></p>
+        </div>
+        
+		
+	</body>
+	
+</html>
